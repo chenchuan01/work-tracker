@@ -82,7 +82,14 @@ check_git_status() {
 # 拉取最新代码
 pull_latest_code() {
     if [ -d .git ]; then
-        echo -e "${BLUE}🔄 拉取最新代码...${NC}"
+        echo -e "${BLUE}🔄 检查远程仓库...${NC}"
+
+        # 检查是否配置了远程仓库
+        if ! git remote get-url origin > /dev/null 2>&1; then
+            echo -e "${YELLOW}⚠️  未配置远程仓库，跳过代码拉取${NC}"
+            echo ""
+            return
+        fi
 
         CURRENT_BRANCH=$(git branch --show-current)
 
@@ -90,6 +97,7 @@ pull_latest_code() {
         OLD_COMMIT=$(git rev-parse HEAD)
 
         # 拉取最新代码
+        echo -e "${BLUE}🔄 拉取最新代码...${NC}"
         git pull origin $CURRENT_BRANCH
 
         # 获取新的提交哈希
