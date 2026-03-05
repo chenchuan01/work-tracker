@@ -4,6 +4,36 @@
 
 ⚠️ **重要提示**：数据存储在 Docker 命名卷中，只要不删除卷，数据就不会丢失。
 
+## 快速开始
+
+### 使用自动化脚本（推荐）
+
+```bash
+# 查看帮助
+./scripts/safe-deploy.sh help
+
+# 完整部署
+./scripts/safe-deploy.sh deploy
+
+# 更新发布（拉取最新代码并重新部署）
+./scripts/safe-deploy.sh update
+
+# 仅更新前端
+./scripts/safe-deploy.sh update-frontend
+
+# 仅更新后端
+./scripts/safe-deploy.sh update-backend
+
+# 备份数据
+./scripts/safe-deploy.sh backup
+
+# 查看服务状态
+./scripts/safe-deploy.sh status
+
+# 查看日志
+./scripts/safe-deploy.sh logs
+```
+
 ## 数据持久化说明
 
 应用使用 Docker 命名卷 `work-tracker_work-tracker-data` 存储所有数据：
@@ -14,7 +44,47 @@
 
 ## 安全的重新部署步骤
 
-### 1. 更新代码后重新部署（推荐）
+### 方式一：使用自动化脚本（推荐）
+
+#### 1. 更新发布（最常用）
+
+```bash
+# 自动拉取最新代码、备份数据、重新构建并部署
+./scripts/safe-deploy.sh update
+```
+
+这个命令会：
+- ✅ 检查 Git 状态和未提交的更改
+- ✅ 自动备份数据
+- ✅ 拉取最新代码
+- ✅ 重新构建镜像（使用缓存加速）
+- ✅ 重启服务
+- ✅ 检查服务健康状态
+
+#### 2. 仅更新前端
+
+```bash
+# 只更新前端，不影响后端和数据
+./scripts/safe-deploy.sh update-frontend
+```
+
+#### 3. 仅更新后端
+
+```bash
+# 只更新后端，自动备份数据
+./scripts/safe-deploy.sh update-backend
+```
+
+#### 4. 完整部署
+
+```bash
+# 完整重新部署（不使用缓存）
+./scripts/safe-deploy.sh deploy
+```
+
+### 方式二：手动部署
+
+#### 1. 更新代码后重新部署（推荐）
 
 ```bash
 # 拉取最新代码
@@ -43,6 +113,33 @@ docker-compose ps
 ```
 
 **说明**：`docker-compose down` 默认**不会删除卷**，数据是安全的。
+
+#### 3. 快速重启（不重新构建）
+
+```bash
+# 只重启服务，不重新构建
+docker-compose restart
+```
+
+**说明**：适用于配置更改或服务异常时的快速重启。
+
+### 方式三：分步更新（高级）
+
+```bash
+# 1. 拉取最新代码
+git pull
+
+# 2. 备份数据
+./scripts/safe-deploy.sh backup
+
+# 3. 只重新构建前端
+docker-compose build frontend
+docker-compose up -d --no-deps frontend
+
+# 4. 只重新构建后端
+docker-compose build backend
+docker-compose up -d --no-deps backend
+```
 
 ### 3. ⚠️ 危险操作（会删除数据）
 
