@@ -10,8 +10,8 @@ services:
     ports:
       - "3001:3001"
     volumes:
-      # 数据库文件映射到宿主机
-      - ~/docker/data/work-tracker:/data
+      # 使用命名卷代替主机挂载，避免 WSL2 文件系统问题
+      - work-tracker-data:/data
     environment:
       - NODE_ENV=production
       - PORT=3001
@@ -45,3 +45,7 @@ services:
 networks:
   work-tracker-network:
     driver: bridge
+
+volumes:
+  work-tracker-data:
+    driver: local

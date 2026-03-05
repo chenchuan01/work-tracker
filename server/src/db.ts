@@ -12,7 +12,8 @@ if (!existsSync(DATA_DIR)) {
 
 // 初始化数据库
 export const db: Database.Database = new Database(DB_PATH);
-db.pragma('journal_mode = WAL');
+// 使用 DELETE 模式代替 WAL，在某些文件系统上更兼容
+db.pragma('journal_mode = DELETE');
 
 // 创建表结构
 const initTables = () => {
