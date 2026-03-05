@@ -11,7 +11,6 @@ import { SummaryModal } from './components/SummaryModal';
 import { CalendarCard } from './components/CalendarCard';
 import { NewsCard } from './components/NewsCard';
 import { MoodJournal } from './components/MoodJournal';
-import { RecordBackfillModal } from './components/RecordBackfillModal';
 import { Toast } from './components/Toast';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { DataMigration } from './components/DataMigration';
@@ -111,8 +110,6 @@ function App() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [dailyQuote, setDailyQuote] = useState<string>('越努力，越幸运。');
-  const [showBackfillModal, setShowBackfillModal] = useState(false);
-  const [backfillDate, setBackfillDate] = useState<string>('');
 
   const { toast, confirm, showToast, hideToast, showConfirm, hideConfirm } = useDialog();
 
@@ -247,15 +244,6 @@ function App() {
     showToast('配置已保存', 'success');
   };
 
-  const handleDateClick = (date: string) => {
-    setBackfillDate(date);
-    setShowBackfillModal(true);
-  };
-
-  const handleBackfillSave = async (content: string, date: string) => {
-    await addRecord(content, date);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -368,7 +356,7 @@ function App() {
             <CalendarCard
               records={records}
               currentDate={currentDate}
-              onDateSelect={handleDateClick}
+              onDateSelect={setCurrentDate}
             />
             <MoodJournal />
           </div>
@@ -384,15 +372,6 @@ function App() {
         onClose={handleCloseSummary}
         onCopy={handleCopySummary}
         onRegenerate={handleGenerateSummary}
-      />
-
-      {/* Record Backfill Modal */}
-      <RecordBackfillModal
-        isOpen={showBackfillModal}
-        selectedDate={backfillDate}
-        onClose={() => setShowBackfillModal(false)}
-        onSave={handleBackfillSave}
-        onError={(msg) => showToast(msg, 'error')}
       />
 
       {/* Settings Modal */}
