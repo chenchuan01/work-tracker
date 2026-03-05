@@ -14,18 +14,54 @@ export const DataMigration: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [migrating, setMigrating] = useState(false);
   const [stats, setStats] = useState<MigrationStats | null>(null);
+  const [dbInfo, setDbInfo] = useState<string>('');
+  const [checking, setChecking] = useState(false);
 
-  const openIndexedDB = (): Promise<IDBDatabase> => {
+  const checkDatabases = async () => {
+    setChecking(true);
+    try {
+      if (!window.indexedDB) {
+        setDbInfo('❌ 浏览器不支持 IndexedDB');
+        return;
+      }
+
+      const databases = await window.indexedDB.databases();
+      if (databases.length === 0) {
+        setDbInfo('❌ 未找到任何 IndexedDB 数据库');
+      } else {
+        const dbList = databases.map(db => `• ${db.name} (版本: ${db.version})`).join('\n');
+        setDbInfo(`✅ 找到以下数据库:\n${dbList}`);
+      }
+    } catch (error: any) {
+      setDbInfo(`⚠️ 检查数据库时出错: ${error.message}`);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const openIndexedDB = (dbName: string = 'WorkTrackerDB'): Promise<IDBDatabase> => {
     return new Promise((resolve, reject) => {
-      const request = indexedDB.open('WorkTrackerDB', 1);
+      try {
+        const request = indexedDB.open(dbName);
 
-      request.onsuccess = () => {
-        resolve(request.result);
-      };
+        request.onsuccess = () => {
+          const db = request.result;
+          console.log('成功打开数据库:', dbName, '版本:', db.version);
+          console.log('对象存储:', Array.from(db.objectStoreNames));
+          resolve(db);
+        };
 
-      request.onerror = () => {
-        reject(new Error('无法打开 IndexedDB'));
-      };
+        request.onerror = () => {
+          console.error('打开数据库失败:', request.error);
+          reject(new Error(`无法打开 IndexedDB: ${request.error?.message || '未知错误'}`));
+        };
+
+        request.onblocked = () => {
+          reject(new Error('数据库被阻塞，请关闭其他使用该数据库的标签页'));
+        };
+      } catch (error: any) {
+        reject(new Error(`IndexedDB 错误: ${error.message}`));
+      }
     });
   };
 
@@ -55,70 +91,85 @@ export const DataMigration: React.FC = () => {
     const errors: string[] = [];
     let recordsImported = 0;
     let todosImported = 0;
+    let recordsCount = 0;
+    let todosCount = 0;
 
     try {
       // 打开 IndexedDB
+      console.log('正在打开 IndexedDB...');
       const db = await openIndexedDB();
+      console.log('数据库已打开，对象存储:', Array.from(db.objectStoreNames));
 
       // 读取 records
-      const records = await getDataFromStore(db, 'records');
-      console.log('从 IndexedDB 读取到的 records:', records);
+      try {
+        const records = await getDataFromStore(db, 'records');
+        recordsCount = records.length;
+        console.log('从 IndexedDB 读取到的 records:', records);
 
-      // 读取 todos
-      const todos = await getDataFromStore(db, 'todos');
-      console.log('从 IndexedDB 读取到的 todos:', todos);
-
-      // 导入 records
-      for (const record of records) {
-        try {
-          const workRecord: WorkRecord = {
-            id: record.id,
-            content: record.content,
-            createdAt: record.createdAt,
-            updatedAt: record.updatedAt,
-            workDate: record.workDate,
-            isImportant: record.isImportant || false,
-            tags: record.tags || [],
-          };
-          await apiClient.createRecord(workRecord);
-          recordsImported++;
-        } catch (error: any) {
-          errors.push(`导入记录失败 (${record.id}): ${error.message}`);
+        // 导入 records
+        for (const record of records) {
+          try {
+            const workRecord: WorkRecord = {
+              id: record.id,
+              content: record.content,
+              createdAt: record.createdAt,
+              updatedAt: record.updatedAt,
+              workDate: record.workDate,
+              isImportant: record.isImportant || false,
+              tags: record.tags || [],
+            };
+            await apiClient.createRecord(workRecord);
+            recordsImported++;
+          } catch (error: any) {
+            errors.push(`导入记录失败 (${record.id}): ${error.message}`);
+          }
         }
+      } catch (error: any) {
+        errors.push(`读取 records 失败: ${error.message}`);
       }
 
-      // 导入 todos
-      for (const todo of todos) {
-        try {
-          const todoItem: Todo = {
-            id: todo.id,
-            content: todo.content,
-            createdAt: todo.createdAt,
-            startedAt: todo.startedAt,
-            completedAt: todo.completedAt,
-            status: todo.status || 'pending',
-          };
-          await apiClient.createTodo(todoItem);
-          todosImported++;
-        } catch (error: any) {
-          errors.push(`导入待办失败 (${todo.id}): ${error.message}`);
+      // 读取 todos
+      try {
+        const todos = await getDataFromStore(db, 'todos');
+        todosCount = todos.length;
+        console.log('从 IndexedDB 读取到的 todos:', todos);
+
+        // 导入 todos
+        for (const todo of todos) {
+          try {
+            const todoItem: Todo = {
+              id: todo.id,
+              content: todo.content,
+              createdAt: todo.createdAt,
+              startedAt: todo.startedAt,
+              completedAt: todo.completedAt,
+              status: todo.status || 'pending',
+            };
+            await apiClient.createTodo(todoItem);
+            todosImported++;
+          } catch (error: any) {
+            errors.push(`导入待办失败 (${todo.id}): ${error.message}`);
+          }
         }
+      } catch (error: any) {
+        errors.push(`读取 todos 失败: ${error.message}`);
       }
 
       db.close();
 
       setStats({
-        recordsCount: records.length,
-        todosCount: todos.length,
+        recordsCount,
+        todosCount,
         recordsImported,
         todosImported,
         errors,
       });
     } catch (error: any) {
+      console.error('迁移失败:', error);
       errors.push(`迁移失败: ${error.message}`);
       setStats({
-        recordsCount: 0,
-        todosCount: 0,
+        recordsCount,
+        todosCount,
         recordsImported,
         todosImported,
         errors,
@@ -172,6 +223,37 @@ export const DataMigration: React.FC = () => {
                 <li>• 数据将导入到当前的服务器数据库中</li>
                 <li>• 如果数据已存在，可能会导致重复</li>
               </ul>
+            </div>
+
+            {/* 数据库检查 */}
+            <div className="mb-4">
+              <button
+                onClick={checkDatabases}
+                disabled={checking}
+                className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 disabled:bg-gray-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              >
+                {checking ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    检查中...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    检查 IndexedDB
+                  </>
+                )}
+              </button>
+              {dbInfo && (
+                <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+                  <pre className="text-xs text-gray-700 whitespace-pre-wrap">{dbInfo}</pre>
+                </div>
+              )}
             </div>
 
             {!stats && (
