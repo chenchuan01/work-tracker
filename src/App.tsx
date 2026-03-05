@@ -14,6 +14,7 @@ import { MoodJournal } from './components/MoodJournal';
 import { RecordBackfillModal } from './components/RecordBackfillModal';
 import { Toast } from './components/Toast';
 import { ConfirmDialog } from './components/ConfirmDialog';
+import { DataMigration } from './components/DataMigration';
 import { ViewType, InputMode, Todo } from './types';
 import { getDateRange } from './utils/date';
 import dayjs from 'dayjs';
@@ -514,6 +515,9 @@ function App() {
         }}
         onCancel={hideConfirm}
       />
+
+      {/* Data Migration */}
+      <DataMigration />
     </div>
   );
 }
