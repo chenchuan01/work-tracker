@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { getDB } from '../db/sqlite';
+import { apiClient } from '../api/client';
 import { useDialog } from '../hooks/useDialog';
 import { Toast } from './Toast';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -34,25 +34,8 @@ export const MoodJournal = () => {
   useEffect(() => {
     const loadEntries = async () => {
       try {
-        const db = await getDB();
-        const results = db.exec('SELECT * FROM mood_entries ORDER BY createdAt DESC');
-        
-        if (results.length > 0 && results[0].values.length > 0) {
-          const columns = results[0].columns;
-          const entriesData: MoodEntry[] = results[0].values.map((row: unknown[]) => {
-            const entry: MoodEntry = {
-              id: row[columns.indexOf('id')] as string,
-              date: row[columns.indexOf('date')] as string,
-              mood: row[columns.indexOf('mood')] as MoodEntry['mood'],
-              content: row[columns.indexOf('content')] as string,
-              createdAt: row[columns.indexOf('createdAt')] as number,
-            };
-            return entry;
-          });
-          setEntries(entriesData);
-        } else {
-          setEntries([]);
-        }
+        const data = await apiClient.getMoodEntries();
+        setEntries(data);
       } catch (error) {
         console.error('加载心情记录失败:', error);
       }
@@ -76,13 +59,7 @@ export const MoodJournal = () => {
     };
 
     try {
-      const db = await getDB();
-      db.run(
-        `INSERT INTO mood_entries (id, date, mood, content, createdAt)
-         VALUES (?, ?, ?, ?, ?)`,
-        [newEntry.id, newEntry.date, newEntry.mood, newEntry.content, newEntry.createdAt]
-      );
-
+      await apiClient.createMoodEntry(newEntry);
       const newEntries = [newEntry, ...entries];
       setEntries(newEntries);
       setContent('');
@@ -100,8 +77,7 @@ export const MoodJournal = () => {
       '确定要删除这条心情记录吗？',
       async () => {
         try {
-          const db = await getDB();
-          db.run('DELETE FROM mood_entries WHERE id = ?', [id]);
+          await apiClient.deleteMoodEntry(id);
           const newEntries = entries.filter(e => e.id !== id);
           setEntries(newEntries);
           showToast('删除成功', 'success');
