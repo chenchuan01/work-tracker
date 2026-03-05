@@ -1,0 +1,24 @@
+# 新闻收集系统 - Crontab 配置示例
+# 
+# 将此文件内容添加到系统的 crontab 中：
+#   crontab -e
+#
+# 或者复制内容到 /etc/cron.d/news-collector
+
+# 环境变量
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+NODE_ENV=production
+
+# 每 6 小时执行一次新闻抓取（在 0 分执行）
+0 */6 * * * cd /path/to/work-tracker/news-collector && npm run news:fetch >> /var/log/news-collector.log 2>&1
+
+# 每天午夜清理旧数据
+0 0 * * * cd /path/to/work-tracker/news-collector && npm run news:cleanup >> /var/log/news-collector.log 2>&1
+
+# 每天早晨 8 点导出新闻数据（可选）
+0 8 * * * cd /path/to/work-tracker/news-collector && npm run news:export -- --format=json --limit=1000 > /path/to/exports/news-$(date +\%Y-\%m-\%d).json 2>&1
+
+# 每小时检查一次调度器是否运行（看门狗，可选）
+# 如果调度器进程不存在则启动它
+0 * * * * pgrep -f "news:schedule" || cd /path/to/work-tracker/news-collector && npm run news:schedule >> /var/log/news-collector.log 2>&1

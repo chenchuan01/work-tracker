@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: work-tracker-backend
+    ports:
+      - "3001:3001"
+    volumes:
+      # 数据库文件映射到宿主机
+      - ~/docker/data/work-tracker:/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATA_DIR=/data
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    networks:
+      - work-tracker-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # 前端服务
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3001/api
+    container_name: work-tracker-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - work-tracker-network
+
+networks:
+  work-tracker-network:
+    driver: bridge

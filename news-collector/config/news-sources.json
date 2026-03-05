@@ -1,0 +1,96 @@
+{
+  "sources": [
+    {
+      "id": "sina-news",
+      "name": "新浪新闻",
+      "type": "rss",
+      "url": "https://rsshub.app/sina/news/china",
+      "category": "general",
+      "language": "zh",
+      "enabled": true,
+      "fetchInterval": 1800000
+    },
+    {
+      "id": "sina-tech",
+      "name": "新浪科技",
+      "type": "rss",
+      "url": "https://rsshub.app/sina/tech",
+      "category": "technology",
+      "language": "zh",
+      "enabled": true,
+      "fetchInterval": 1800000
+    },
+    {
+      "id": "leijun-weibo",
+      "name": "雷军微博",
+      "type": "rss",
+      "url": "https://rsshub.app/weibo/user/1749127163",
+      "category": "xiaomi",
+      "language": "zh",
+      "enabled": true,
+      "fetchInterval": 900000
+    },
+    {
+      "id": "xiaomi-official",
+      "name": "小米官网",
+      "type": "rss",
+      "url": "https://www.mi.com/rss.xml",
+      "category": "xiaomi",
+      "language": "zh",
+      "enabled": true,
+      "fetchInterval": 3600000
+    },
+    {
+      "id": "36kr",
+      "name": "36 氪",
+      "type": "rss",
+      "url": "https://36kr.com/feed",
+      "category": "technology",
+      "language": "zh",
+      "enabled": true,
+      "fetchInterval": 3600000
+    },
+    {
+      "id": "sspai",
+      "name": "少数派",
+      "type": "rss",
+      "url": "https://sspai.com/feed",
+      "category": "technology",
+      "language": "zh",
+      "enabled": true,
+      "fetchInterval": 3600000
+    },
+    {
+      "id": "hackernews",
+      "name": "Hacker News",
+      "type": "rss",
+      "url": "https://hnrss.org/frontpage",
+      "category": "technology",
+      "language": "en",
+      "enabled": true,
+      "fetchInterval": 1800000
+    },
+    {
+      "id": "techcrunch",
+      "name": "TechCrunch",
+      "type": "rss",
+      "url": "https://techcrunch.com/feed/",
+      "category": "technology",
+      "language": "en",
+      "enabled": true,
+      "fetchInterval": 3600000
+    }
+  ],
+  "settings": {
+    "defaultFetchInterval": 1800000,
+    "maxRetries": 3,
+    "retryDelay": 5000,
+    "requestTimeout": 30000,
+    "userAgent": "Mozilla/5.0 (compatible; NewsCollector/1.0; Automated News Gathering System)",
+    "respectRobotsTxt": true,
+    "rateLimit": {
+      "requestsPerMinute": 30,
+      "requestsPerHour": 500
+    }
+  }
+}

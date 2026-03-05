@@ -1,0 +1,27 @@
+[Unit]
+Description=News Collector Scheduler
+Documentation=https://github.com/your-org/work-tracker
+After=network.target
+
+[Service]
+Type=simple
+User=your-user
+WorkingDirectory=/path/to/work-tracker/news-collector
+ExecStart=/usr/bin/npm run news:schedule
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+Environment=NEWS_CONFIG_PATH=/path/to/work-tracker/news-collector/config/news-sources.json
+Environment=NEWS_DATA_DIR=/path/to/work-tracker/news-collector/data
+
+# 日志
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=news-collector
+
+# 资源限制
+MemoryMax=512M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target

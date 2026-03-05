@@ -1,0 +1,43 @@
+{
+  "name": "news-collector",
+  "version": "1.0.0",
+  "description": "Automated news gathering system with RSS and API support",
+  "type": "module",
+  "main": "./dist/cli.js",
+  "bin": {
+    "news-collector": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "news:fetch": "node --enable-source-maps dist/cli.js fetch",
+    "news:schedule": "node --enable-source-maps dist/cli.js schedule",
+    "news:stats": "node --enable-source-maps dist/cli.js stats",
+    "news:export": "node --enable-source-maps dist/cli.js export",
+    "news:cleanup": "node --enable-source-maps dist/cli.js cleanup",
+    "news:migrate": "node --enable-source-maps dist/cli/migrate.js",
+    "start": "npm run news:schedule",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "news",
+    "rss",
+    "crawler",
+    "automation",
+    "scheduler"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "fast-xml-parser": "^4.3.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
