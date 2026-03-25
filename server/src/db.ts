@@ -111,13 +111,11 @@ const initTables = () => {
       'INSERT INTO news_sources (id, name, url, category, type) VALUES (?, ?, ?, ?, ?)'
     );
     const sources = [
-      ['wallstreetcn',   '华尔街见闻',  'https://rsshub.app/wallstreetcn/news/global',      'finance',   'rss'],
-      ['cls-telegraph',  '财联社电报',  'https://rsshub.app/cls/telegraph',                  'finance',   'rss'],
-      ['jiqizhixin',     '机器之心',    'https://rsshub.app/jiqizhixin/articles',             'ai',        'rss'],
-      ['qbitai',         '量子位',      'https://rsshub.app/qbitai/news',                     'ai',        'rss'],
-      ['huxiu',          '虎嗅',        'https://rsshub.app/huxiu/article',                   'tech',      'rss'],
-      ['36kr',           '36氪',        'https://rsshub.app/36kr/news/latest',                'tech',      'rss'],
-      ['cifnews',        '雨果跨境',    'https://rsshub.app/cifnews/latest',                  'ecommerce', 'rss'],
+      ['yicai',          '第一财经',    'https://www.yicai.com/feed',                          'finance',   'rss'],
+      ['36kr',           '36氪',        'https://36kr.com/feed',                               'tech',      'rss'],
+      ['huxiu',          '虎嗅',        'https://www.huxiu.com/rss/0.xml',                     'tech',      'rss'],
+      ['sspai',          '少数派',      'https://sspai.com/feed',                              'tech',      'rss'],
+      ['ruanyifeng',     '阮一峰',      'https://www.ruanyifeng.com/blog/atom.xml',            'tech',      'rss'],
       ['hacker-news',    'Hacker News', 'https://hacker-news.firebaseio.com/v0/topstories.json', 'tech',   'hn_api'],
     ];
     for (const s of sources) {
