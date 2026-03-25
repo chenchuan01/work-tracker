@@ -4,6 +4,8 @@ import todosRouter from './routes/todos.js';
 import recordsRouter from './routes/records.js';
 import moodRouter from './routes/mood.js';
 import configRouter from './routes/config.js';
+import newsRouter from './routes/news.js';
+import { startNewsScheduler } from './services/newsScheduler.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,9 +24,11 @@ app.use('/api/todos', todosRouter);
 app.use('/api/records', recordsRouter);
 app.use('/api/mood', moodRouter);
 app.use('/api/config', configRouter);
+app.use('/api/news', newsRouter);
 
 // 启动服务器
 app.listen(PORT, () => {
-  console.log(`服务器运行在端口 ${PORT}`);
+  console.log(`服务器运��在端口 ${PORT}`);
   console.log(`健康检查: http://localhost:${PORT}/health`);
+  startNewsScheduler();
 });

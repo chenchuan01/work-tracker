@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
 
 interface SummaryModalProps {
   isOpen: boolean;
@@ -53,12 +54,8 @@ export const SummaryModal: React.FC<SummaryModalProps> = ({
               </button>
             </div>
           ) : (
-            <div>
-              <div className="prose max-w-none">
-                <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
-                  {summary}
-                </p>
-              </div>
+            <div className="prose prose-sm max-w-none text-gray-800 leading-relaxed">
+              <ReactMarkdown>{summary ?? ''}</ReactMarkdown>
             </div>
           )}
         </div>

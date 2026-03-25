@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+import { NewsItem, NewsCategory, NewsPreferences } from '../types/index.js';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
 class ApiClient {
   private baseUrl: string;
@@ -106,6 +108,29 @@ class ApiClient {
     return this.request(`/config/${key}`, {
       method: 'POST',
       body: JSON.stringify({ value }),
+    });
+  }
+
+  // News API
+  async getNews(category?: NewsCategory, limit = 30): Promise<NewsItem[]> {
+    const params = new URLSearchParams();
+    if (category && category !== 'all') params.set('category', category);
+    params.set('limit', String(limit));
+    return this.request<NewsItem[]>(`/news?${params.toString()}`);
+  }
+
+  async refreshNews(): Promise<{ count: number }> {
+    return this.request<{ count: number }>('/news/refresh', { method: 'POST' });
+  }
+
+  async getNewsPreferences(): Promise<NewsPreferences> {
+    return this.request<NewsPreferences>('/news/preferences');
+  }
+
+  async saveNewsPreferences(prefs: NewsPreferences): Promise<void> {
+    await this.request('/news/preferences', {
+      method: 'POST',
+      body: JSON.stringify(prefs),
     });
   }
 }

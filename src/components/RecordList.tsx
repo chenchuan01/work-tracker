@@ -9,113 +9,78 @@ interface RecordListProps {
   onToggleImportant: (id: string, isImportant: boolean) => void;
 }
 
-export const RecordList: React.FC<RecordListProps> = ({
-  records,
-  onEdit,
-  onDelete,
-  onToggleImportant,
-}) => {
+export const RecordList: React.FC<RecordListProps> = ({ records, onEdit, onDelete, onToggleImportant }) => {
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [editContent, setEditContent] = React.useState('');
 
-  const handleEdit = (record: WorkRecord) => {
-    setEditingId(record.id);
-    setEditContent(record.content);
-  };
-
-  const handleSave = (id: string) => {
-    if (editContent.trim()) {
-      onEdit(id, editContent.trim());
-    }
-    setEditingId(null);
-    setEditContent('');
-  };
-
-  const handleCancel = () => {
-    setEditingId(null);
-    setEditContent('');
-  };
+  const handleEdit   = (record: WorkRecord) => { setEditingId(record.id); setEditContent(record.content); };
+  const handleSave   = (id: string)          => { if (editContent.trim()) onEdit(id, editContent.trim()); setEditingId(null); setEditContent(''); };
+  const handleCancel = ()                    => { setEditingId(null); setEditContent(''); };
 
   if (records.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      <div className="card p-12 text-center animate-in">
+        <svg className="mx-auto h-10 w-10 mb-3" style={{ color: '#D1D1D6' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
         </svg>
-        <p className="mt-2">暂无工作记录</p>
-        <p className="text-sm">在上方输入框中添加第一条记录</p>
+        <p className="text-sm text-gray-400">暂无工作记录</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-3">
-      {records.map((record) => (
+    <div className="space-y-2.5">
+      {records.map((record, index) => (
         <div
           key={record.id}
-          className={`bg-white rounded-lg border p-4 transition-all hover:shadow-sm ${
-            record.isImportant ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200'
-          }`}
+          className={`card px-5 py-4 transition-shadow hover:shadow-md animate-in ${record.isImportant ? 'border-l-2' : ''}`}
+          style={record.isImportant ? { borderLeftColor: 'var(--su7-olive)', animationDelay: `${index * 0.04}s` } : { animationDelay: `${index * 0.04}s` }}
         >
           {editingId === record.id ? (
             <div>
               <textarea
                 value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                onChange={e => setEditContent(e.target.value)}
+                className="w-full px-3 py-2.5 text-sm border rounded-lg resize-none transition-colors"
+                style={{ borderColor: 'var(--su7-olive)', background: '#FAFAFA' }}
                 rows={3}
                 autoFocus
               />
-              <div className="flex gap-2 mt-2">
-                <button
-                  onClick={() => handleSave(record.id)}
-                  className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
-                >
-                  保存
-                </button>
-                <button
-                  onClick={handleCancel}
-                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
-                >
-                  取消
-                </button>
+              <div className="flex gap-2 mt-2.5">
+                <button onClick={() => handleSave(record.id)} className="btn-olive px-3 py-1.5 rounded-md text-xs font-medium">保存</button>
+                <button onClick={handleCancel}                className="btn-ghost px-3 py-1.5 rounded-md text-xs font-medium border" style={{ borderColor: 'var(--border)' }}>取消</button>
               </div>
             </div>
           ) : (
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-gray-800 whitespace-pre-wrap">{record.content}</p>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">{record.content}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-xs text-gray-500">{formatDateTime(record.createdAt)}</span>
+                  <span className="text-xs" style={{ color: 'var(--su7-silver)' }}>{formatDateTime(record.createdAt)}</span>
                   {record.isImportant && (
-                    <span className="text-xs text-yellow-600 font-medium">⭐ 重点</span>
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full" style={{ background: 'rgba(107,123,74,0.1)', color: 'var(--su7-olive)' }}>重点</span>
                   )}
                 </div>
               </div>
-              <div className="flex items-center gap-1 ml-4">
+              <div className="flex items-center gap-0.5 flex-shrink-0">
                 <button
                   onClick={() => onToggleImportant(record.id, !record.isImportant)}
-                  className={`p-1.5 rounded transition-colors ${
-                    record.isImportant
-                      ? 'text-yellow-600 hover:bg-yellow-100'
-                      : 'text-gray-400 hover:bg-gray-100'
-                  }`}
+                  className="p-1.5 rounded-md transition-colors btn-ghost"
+                  style={record.isImportant ? { color: 'var(--su7-olive)' } : {}}
                   title="标记重点"
                 >
-                  ⭐
+                  <svg className="w-4 h-4" fill={record.isImportant ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                  </svg>
                 </button>
-                <button
-                  onClick={() => handleEdit(record)}
-                  className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-colors"
-                  title="编辑"
-                >
+                <button onClick={() => handleEdit(record)} className="p-1.5 rounded-md btn-ghost" title="编辑">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
-                <button
-                  onClick={() => onDelete(record.id)}
-                  className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                <button onClick={() => onDelete(record.id)} className="p-1.5 rounded-md btn-ghost" style={{ color: '#B0B0B8' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--su7-red)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = '#B0B0B8')}
                   title="删除"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

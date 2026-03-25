@@ -69,16 +69,16 @@ start() {
     sleep 5
 
     # 检查服务状态
-    if curl -s http://localhost:3001/health > /dev/null 2>&1; then
+    if curl -s http://localhost:9090/health > /dev/null 2>&1; then
         print_info "后端服务启动成功"
     else
         print_warn "后端服务可能未正常启动，请检查日志"
     fi
 
     print_info "服务已启动"
-    print_info "前端地址: http://localhost:3000"
-    print_info "后端 API: http://localhost:3001/api"
-    print_info "健康检查: http://localhost:3001/health"
+    print_info "前端地址: http://localhost:9000"
+    print_info "后端 API: http://localhost:9090/api"
+    print_info "健康检查: http://localhost:9090/health"
 }
 
 # 停止服务
@@ -109,7 +109,7 @@ status() {
     docker-compose ps
     echo ""
     print_info "检查后端健康状态..."
-    curl -s http://localhost:3001/health | jq . || echo "后端服务未响应"
+    curl -s http://localhost:9090/health | jq . || echo "后端服务未响应"
 }
 
 # 备份数据
@@ -161,8 +161,8 @@ deploy() {
     build
     start
     print_info "部署完成！"
-    print_info "前端地址: http://localhost:3000"
-    print_info "后端 API: http://localhost:3001/api"
+    print_info "前端地址: http://localhost:9000"
+    print_info "后端 API: http://localhost:9090/api"
     print_info "数据目录: $DATA_DIR"
 }
 

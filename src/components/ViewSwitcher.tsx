@@ -10,53 +10,24 @@ interface ViewSwitcherProps {
   onDateChange: (date: string) => void;
 }
 
-export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
-  currentView,
-  currentDate,
-  onViewChange,
-  onDateChange,
-}) => {
+export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({ currentView, currentDate, onViewChange, onDateChange }) => {
   const handlePrev = () => {
     const d = dayjs(currentDate);
-    let newDate: dayjs.Dayjs;
-
-    switch (currentView) {
-      case 'day':
-        newDate = d.subtract(1, 'day');
-        break;
-      case 'week':
-        newDate = d.subtract(1, 'week');
-        break;
-      case 'month':
-        newDate = d.subtract(1, 'month');
-        break;
-    }
-
-    onDateChange(newDate.format('YYYY-MM-DD'));
+    const unit = currentView === 'day' ? 'day' : currentView === 'week' ? 'week' : 'month';
+    onDateChange(d.subtract(1, unit).format('YYYY-MM-DD'));
   };
-
   const handleNext = () => {
     const d = dayjs(currentDate);
-    let newDate: dayjs.Dayjs;
-
-    switch (currentView) {
-      case 'day':
-        newDate = d.add(1, 'day');
-        break;
-      case 'week':
-        newDate = d.add(1, 'week');
-        break;
-      case 'month':
-        newDate = d.add(1, 'month');
-        break;
-    }
-
-    onDateChange(newDate.format('YYYY-MM-DD'));
+    const unit = currentView === 'day' ? 'day' : currentView === 'week' ? 'week' : 'month';
+    onDateChange(d.add(1, unit).format('YYYY-MM-DD'));
   };
+  const handleToday = () => onDateChange(dayjs().format('YYYY-MM-DD'));
 
-  const handleToday = () => {
-    onDateChange(dayjs().format('YYYY-MM-DD'));
-  };
+  const NavBtn = ({ onClick, children }: { onClick: () => void; children: React.ReactNode }) => (
+    <button onClick={onClick} className="p-1.5 rounded-md btn-ghost">
+      {children}
+    </button>
+  );
 
   const views: { type: ViewType; label: string }[] = [
     { type: 'day', label: '日' },
@@ -65,46 +36,38 @@ export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({
   ];
 
   return (
-    <div className="flex items-center justify-between mb-6">
-      <div className="flex items-center gap-2">
-        <button
-          onClick={handlePrev}
-          className="p-2 hover:bg-gray-100 rounded transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="card px-5 py-3 mb-4 flex items-center justify-between animate-in">
+      <div className="flex items-center gap-1.5">
+        <NavBtn onClick={handlePrev}>
+          <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
-        </button>
-        <button
-          onClick={handleToday}
-          className="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+        </NavBtn>
+        <button onClick={handleToday} className="px-2.5 py-1 rounded-md text-xs font-medium transition-colors" style={{ color: 'var(--su7-sky)', background: 'rgba(74,143,168,0.1)' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(74,143,168,0.18)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(74,143,168,0.1)'; }}
         >
           今天
         </button>
-        <button
-          onClick={handleNext}
-          className="p-2 hover:bg-gray-100 rounded transition-colors"
-        >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <NavBtn onClick={handleNext}>
+          <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
-        </button>
-        <h2 className="ml-3 text-lg font-semibold text-gray-800">
-          {formatDisplayDate(currentDate)}
-        </h2>
+        </NavBtn>
+        <span className="ml-2 text-sm font-semibold text-gray-800">{formatDisplayDate(currentDate)}</span>
       </div>
-      <div className="flex bg-gray-100 rounded-lg p-1">
-        {views.map((view) => (
+
+      <div className="flex rounded-lg overflow-hidden border text-xs font-medium" style={{ borderColor: 'var(--border)' }}>
+        {views.map(v => (
           <button
-            key={view.type}
-            onClick={() => onViewChange(view.type)}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-              currentView === view.type
-                ? 'bg-white text-blue-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
+            key={v.type}
+            onClick={() => onViewChange(v.type)}
+            className="px-3 py-1.5 transition-colors"
+            style={currentView === v.type
+              ? { background: 'var(--su7-black)', color: '#fff' }
+              : { background: '#fff', color: '#6B6B76' }}
           >
-            {view.label}
+            {v.label}
           </button>
         ))}
       </div>

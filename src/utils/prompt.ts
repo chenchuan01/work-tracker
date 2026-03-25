@@ -1,13 +1,20 @@
-export const buildSummaryPrompt = (records: string[], dateRange: string, systemPrompt?: string): string => {
+export const buildSummaryPrompt = (
+  records: string[],
+  dateRange: string,
+  systemPrompt?: string,
+  viewType?: 'day' | 'week' | 'month'
+): string => {
   const recordsText = records.map(r => `- ${r}`).join('\n');
 
+  const maxWords = viewType === 'week' || viewType === 'month' ? 1000 : 100;
   const defaultSystemPrompt = `你是一位专业的工作助理，请根据用户提供的工作记录，生成一份精炼的工作简报。
 
 【要求】
-1. 字数严格控制在 100 字以内（中文字符）
+1. 字数严格控制在 ${maxWords} 字以内（中文字符）
 2. 语言简洁专业，适合工作汇报
 3. 突出重点工作成果
-4. 使用连贯的语句，避免罗列`;
+4. 使用 Markdown 格式输出，可适当使用标题、列表等结构
+5. 使用连贯的语句，避免无意义罗列`;
 
   const systemInstruction = systemPrompt || defaultSystemPrompt;
 
@@ -32,7 +39,8 @@ export interface ModelConfig {
 export const generateSummary = async (
   records: { content: string }[],
   dateRange: string,
-  config?: ModelConfig
+  config?: ModelConfig,
+  viewType?: 'day' | 'week' | 'month'
 ): Promise<string> => {
   const {
     apiKey,
@@ -46,7 +54,8 @@ export const generateSummary = async (
     return simulateSummary(records);
   }
 
-  const prompt = buildSummaryPrompt(records.map(r => r.content), dateRange, systemPrompt);
+  const maxTokens = viewType === 'week' || viewType === 'month' ? 1500 : 200;
+  const prompt = buildSummaryPrompt(records.map(r => r.content), dateRange, systemPrompt, viewType);
 
   try {
     const url = `${baseURL.replace(/\/$/, '')}/chat/completions`;
@@ -64,7 +73,7 @@ export const generateSummary = async (
             content: prompt,
           },
         ],
-        max_tokens: 200,
+        max_tokens: maxTokens,
         temperature: 0.7,
       }),
     });

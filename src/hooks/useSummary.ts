@@ -29,7 +29,7 @@ export const useSummary = () => {
       }
 
       const dateRangeText = `${formatDisplayDate(dateRange.start)} - ${formatDisplayDate(dateRange.end)}`;
-      const result = await generateSummary(filteredRecords, dateRangeText, config);
+      const result = await generateSummary(filteredRecords, dateRangeText, config, viewType);
       setSummary(result);
     } catch (err) {
       setError('生成失败，请重试');

@@ -18,212 +18,114 @@ interface DayCell {
 export const CalendarCard = ({ records, currentDate, onDateSelect }: CalendarCardProps) => {
   const current = dayjs(currentDate);
 
-  // 计算每日记录数量
   const recordsCountByDate = useMemo(() => {
-    const countMap: Record<string, number> = {};
-    records.forEach(record => {
-      const date = record.workDate;
-      countMap[date] = (countMap[date] || 0) + 1;
-    });
-    return countMap;
+    const map: Record<string, number> = {};
+    records.forEach(r => { map[r.workDate] = (map[r.workDate] || 0) + 1; });
+    return map;
   }, [records]);
 
-  // 生成日历网格
   const calendarDays = useMemo(() => {
-    const startOfMonth = current.startOf('month');
-    const endOfMonth = current.endOf('month');
-    
-    // 获取当月第一天是周几，以及需要显示的上月天数
-    const startDayOfWeek = startOfMonth.day(); // 0 是周日
-    const daysInMonth = endOfMonth.date();
-    
+    const startOfMonth  = current.startOf('month');
+    const endOfMonth    = current.endOf('month');
+    const startDayOfWeek = startOfMonth.day();
+    const daysInMonth   = endOfMonth.date();
     const days: DayCell[] = [];
     const today = dayjs();
-    
-    // 添加上月的日期
+
     const prevMonth = current.subtract(1, 'month');
-    const daysInPrevMonth = prevMonth.daysInMonth();
+    const daysInPrev = prevMonth.daysInMonth();
     for (let i = startDayOfWeek - 1; i >= 0; i--) {
-      const date = prevMonth.date(daysInPrevMonth - i);
-      days.push({
-        date: date,
-        isCurrentMonth: false,
-        isToday: date.isSame(today, 'day'),
-        recordCount: recordsCountByDate[date.format('YYYY-MM-DD')] || 0,
-      });
+      const date = prevMonth.date(daysInPrev - i);
+      days.push({ date, isCurrentMonth: false, isToday: date.isSame(today, 'day'), recordCount: recordsCountByDate[date.format('YYYY-MM-DD')] || 0 });
     }
-    
-    // 添加当月的日期
     for (let i = 1; i <= daysInMonth; i++) {
       const date = current.date(i);
-      days.push({
-        date: date,
-        isCurrentMonth: true,
-        isToday: date.isSame(today, 'day'),
-        recordCount: recordsCountByDate[date.format('YYYY-MM-DD')] || 0,
-      });
+      days.push({ date, isCurrentMonth: true, isToday: date.isSame(today, 'day'), recordCount: recordsCountByDate[date.format('YYYY-MM-DD')] || 0 });
     }
-    
-    // 添加下月的日期（补齐 6 行）
-    const remainingDays = 42 - days.length; // 6 行 x 7 天 = 42 天
     const nextMonth = current.add(1, 'month');
-    for (let i = 1; i <= remainingDays; i++) {
+    for (let i = 1; i <= 42 - days.length; i++) {
       const date = nextMonth.date(i);
-      days.push({
-        date: date,
-        isCurrentMonth: false,
-        isToday: date.isSame(today, 'day'),
-        recordCount: recordsCountByDate[date.format('YYYY-MM-DD')] || 0,
-      });
+      days.push({ date, isCurrentMonth: false, isToday: date.isSame(today, 'day'), recordCount: recordsCountByDate[date.format('YYYY-MM-DD')] || 0 });
     }
-    
     return days;
   }, [current, recordsCountByDate]);
 
-  // 根据记录数量获取背景颜色
-  const getBackgroundColor = (count: number, isCurrentMonth: boolean) => {
-    if (!isCurrentMonth) return 'bg-gray-50';
-    if (count === 0) return 'bg-white';
-    if (count <= 2) return 'bg-blue-100';
-    if (count <= 4) return 'bg-blue-200';
-    if (count <= 6) return 'bg-blue-300';
-    return 'bg-blue-400';
-  };
-
-  // 根据记录数量获取文字颜色
-  const getTextColor = (count: number, isCurrentMonth: boolean) => {
-    if (!isCurrentMonth) return 'text-gray-400';
-    if (count === 0) return 'text-gray-700';
-    if (count <= 4) return 'text-gray-800';
-    return 'text-white';
-  };
-
-  const handlePrevMonth = () => {
-    if (onDateSelect) {
-      onDateSelect(current.subtract(1, 'month').format('YYYY-MM-DD'));
-    }
-  };
-
-  const handleNextMonth = () => {
-    if (onDateSelect) {
-      onDateSelect(current.add(1, 'month').format('YYYY-MM-DD'));
-    }
-  };
-
-  const handleToday = () => {
-    if (onDateSelect) {
-      onDateSelect(dayjs().format('YYYY-MM-DD'));
-    }
+  // Heatmap intensity based on olive green
+  const getCellStyle = (count: number, isCurrentMonth: boolean, isSelected: boolean, isToday: boolean) => {
+    if (isSelected) return { background: 'var(--su7-black)', color: '#fff' };
+    if (!isCurrentMonth) return { background: 'transparent', color: '#D1D1D6' };
+    if (isToday) return { background: 'rgba(107,123,74,0.15)', color: 'var(--su7-olive)', fontWeight: 600 };
+    if (count === 0) return { background: 'transparent', color: '#4A4A52' };
+    const alpha = count <= 2 ? 0.18 : count <= 4 ? 0.32 : count <= 6 ? 0.52 : 0.75;
+    return { background: `rgba(107,123,74,${alpha})`, color: count >= 5 ? '#fff' : '#2A3A1A', fontWeight: 500 };
   };
 
   const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      {/* 日历头部 */}
+    <div className="card p-5 animate-in">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">
-          {current.format('YYYY 年 M 月')}
-        </h3>
+        <h3 className="text-sm font-semibold text-gray-700">{current.format('YYYY 年 M 月')}</h3>
         <div className="flex items-center gap-1">
-          <button
-            onClick={handlePrevMonth}
-            className="p-1 hover:bg-gray-100 rounded transition-colors"
-            title="上月"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button onClick={() => onDateSelect?.(current.subtract(1, 'month').format('YYYY-MM-DD'))} className="p-1.5 rounded-md btn-ghost">
+            <svg className="w-3.5 h-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <button
-            onClick={handleToday}
-            className="px-2 py-1 text-sm hover:bg-gray-100 rounded transition-colors"
+            onClick={() => onDateSelect?.(dayjs().format('YYYY-MM-DD'))}
+            className="px-2 py-0.5 rounded text-xs transition-colors"
+            style={{ color: 'var(--su7-silver)' }}
           >
             今天
           </button>
-          <button
-            onClick={handleNextMonth}
-            className="p-1 hover:bg-gray-100 rounded transition-colors"
-            title="下月"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button onClick={() => onDateSelect?.(current.add(1, 'month').format('YYYY-MM-DD'))} className="p-1.5 rounded-md btn-ghost">
+            <svg className="w-3.5 h-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </button>
         </div>
       </div>
 
-      {/* 星期标题 */}
-      <div className="grid grid-cols-7 mb-2">
-        {weekDays.map((day, index) => (
-          <div
-            key={day}
-            className={`text-center text-sm font-medium py-1 ${
-              index === 0 || index === 6 ? 'text-red-500' : 'text-gray-600'
-            }`}
-          >
-            {day}
-          </div>
+      {/* Weekday labels */}
+      <div className="grid grid-cols-7 gap-1 mb-1">
+        {weekDays.map(d => (
+          <div key={d} className="text-center text-xs font-medium py-1" style={{ color: 'var(--su7-silver)' }}>{d}</div>
         ))}
       </div>
 
-      {/* 日历网格 */}
+      {/* Day grid */}
       <div className="grid grid-cols-7 gap-1">
-        {calendarDays.map((cell, index) => {
-          const dateStr = cell.date.format('YYYY-MM-DD');
+        {calendarDays.map((day, i) => {
+          const dateStr   = day.date.format('YYYY-MM-DD');
           const isSelected = dateStr === currentDate;
-          
+          const cellStyle  = getCellStyle(day.recordCount, day.isCurrentMonth, isSelected, day.isToday);
+
           return (
             <button
-              key={index}
-              onClick={() => onDateSelect?.(dateStr)}
-              className={`
-                relative p-2 rounded-lg transition-all min-h-[50px] flex flex-col items-center justify-start
-                ${getBackgroundColor(cell.recordCount, cell.isCurrentMonth)}
-                ${isSelected ? 'ring-2 ring-blue-500 ring-offset-1' : ''}
-                hover:opacity-80
-              `}
+              key={i}
+              onClick={() => day.isCurrentMonth && onDateSelect?.(dateStr)}
+              disabled={!day.isCurrentMonth}
+              className="relative aspect-square rounded-lg text-xs transition-opacity flex flex-col items-center justify-center"
+              style={{ ...cellStyle, cursor: day.isCurrentMonth ? 'pointer' : 'default' }}
             >
-              <span className={`text-sm font-medium ${getTextColor(cell.recordCount, cell.isCurrentMonth)}`}>
-                {cell.date.date()}
-              </span>
-              {cell.recordCount > 0 && (
-                <span className={`text-xs mt-1 ${getTextColor(cell.recordCount, cell.isCurrentMonth)}`}>
-                  {cell.recordCount}条
-                </span>
-              )}
-              {cell.isToday && (
-                <div className="absolute bottom-1 w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+              {day.date.date()}
+              {day.recordCount > 0 && day.isCurrentMonth && !isSelected && (
+                <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full" style={{ background: day.recordCount >= 5 ? 'rgba(255,255,255,0.7)' : 'var(--su7-olive)' }} />
               )}
             </button>
           );
         })}
       </div>
 
-      {/* 图例 */}
-      <div className="mt-4 pt-3 border-t border-gray-200">
-        <div className="flex flex-wrap gap-2 text-xs text-gray-600">
-          <div className="flex items-center gap-1">
-            <div className="w-4 h-4 bg-white border border-gray-300 rounded"></div>
-            <span>无记录</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-4 h-4 bg-blue-100 rounded"></div>
-            <span>1-2 条</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-4 h-4 bg-blue-200 rounded"></div>
-            <span>3-4 条</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-4 h-4 bg-blue-300 rounded"></div>
-            <span>5-6 条</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-4 h-4 bg-blue-400 rounded"></div>
-            <span>7 条+</span>
-          </div>
-        </div>
+      {/* Legend */}
+      <div className="mt-4 pt-3 border-t flex items-center gap-3" style={{ borderColor: 'var(--border)' }}>
+        <span className="text-xs" style={{ color: 'var(--su7-silver)' }}>记录量</span>
+        {[0, 0.18, 0.35, 0.52, 0.75].map((a, i) => (
+          <div key={i} className="w-4 h-4 rounded-sm" style={{ background: a === 0 ? '#EBEBEF' : `rgba(107,123,74,${a})` }} />
+        ))}
+        <span className="text-xs" style={{ color: 'var(--su7-silver)' }}>多</span>
       </div>
     </div>
   );

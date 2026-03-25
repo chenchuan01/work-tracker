@@ -31,3 +31,34 @@ export interface WorkSummary {
 
 export type ViewType = 'day' | 'week' | 'month';
 export type InputMode = 'record' | 'todo';
+
+// News types
+export type NewsCategory = 'all' | 'finance' | 'ai' | 'ecommerce' | 'tech';
+
+export interface NewsItem {
+  id: string;
+  title: string;
+  url: string;
+  summary: string;
+  source: string;
+  category: Exclude<NewsCategory, 'all'>;
+  publishedAt: string;
+  aiScore: number;
+  aiRecommended: boolean;
+  aiReason?: string;
+}
+
+export interface NewsPreferences {
+  keywords: string[];
+  excludeKeywords: string[];
+}
+
+export interface NewsSource {
+  id: string;
+  name: string;
+  url: string;
+  category: string;
+  type: string;
+  enabled: number;
+}
+
