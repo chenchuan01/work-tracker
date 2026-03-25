@@ -1,22 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import ReactMarkdown from 'react-markdown';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/zh-cn';
 import { apiClient } from '../api/client';
 import { NewsItem, NewsCategory, NewsPreferences } from '../types/index';
+import { useNewsSummary } from '../hooks/useNewsSummary';
+import { ModelConfig } from '../utils/newsSummary';
 
 dayjs.extend(relativeTime);
 dayjs.locale('zh-cn');
 
 interface NewsCardProps {
-  onSummarize?: (news: NewsItem) => void;
+  modelConfig?: ModelConfig;
 }
 
 const CATEGORIES: { key: NewsCategory; label: string; color: string }[] = [
   { key: 'all',       label: '全部',   color: 'var(--su7-silver)' },
-  { key: 'finance',   label: '财经',   color: '#E8A838' },
-  { key: 'ai',        label: 'AI',     color: 'var(--su7-olive)' },
-  { key: 'ecommerce', label: '跨境',   color: '#5BA3C9' },
+  { key: 'general',   label: '综合',   color: '#E8A838' },
+  { key: 'finance',   label: '财经',   color: '#D4A84B' },
   { key: 'tech',      label: '科技',   color: 'var(--su7-sky)' },
 ];
 
@@ -48,7 +50,7 @@ function SkeletonNews() {
   );
 }
 
-export const NewsCard: React.FC<NewsCardProps> = ({ onSummarize }) => {
+export const NewsCard: React.FC<NewsCardProps> = ({ modelConfig }) => {
   const [category, setCategory] = useState<NewsCategory>('all');
   const [newsList, setNewsList] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -59,6 +61,8 @@ export const NewsCard: React.FC<NewsCardProps> = ({ onSummarize }) => {
   const [prefs, setPrefs] = useState<NewsPreferences>({ keywords: [], excludeKeywords: [] });
   const [keywordInput, setKeywordInput] = useState('');
   const [excludeInput, setExcludeInput] = useState('');
+
+  const newsSummary = useNewsSummary();
 
   const loadNews = useCallback(async (cat: NewsCategory) => {
     setLoading(true);
@@ -113,7 +117,7 @@ export const NewsCard: React.FC<NewsCardProps> = ({ onSummarize }) => {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-800">📡 实时资讯</span>
+          <span className="text-sm font-semibold text-gray-800">📰 实时资讯</span>
           {lastRefresh && (
             <span className="text-xs" style={{ color: 'var(--su7-silver)' }}>
               {dayjs(lastRefresh).fromNow()}更新
@@ -185,7 +189,11 @@ export const NewsCard: React.FC<NewsCardProps> = ({ onSummarize }) => {
               </div>
             ) : (
               newsList.map(item => (
-                <NewsItemRow key={item.id} item={item} onSummarize={onSummarize} />
+                <NewsItemRow
+                  key={item.id}
+                  item={item}
+                  onSummarize={(news) => newsSummary.summarize(news, modelConfig)}
+                />
               ))
             )}
           </div>
@@ -206,9 +214,63 @@ export const NewsCard: React.FC<NewsCardProps> = ({ onSummarize }) => {
           onClose={() => setShowPrefs(false)}
         />
       )}
+
+      {/* News Summary Modal */}
+      {(newsSummary.generating || newsSummary.summary || newsSummary.error) && (
+        <NewsSummaryModal
+          generating={newsSummary.generating}
+          summary={newsSummary.summary}
+          error={newsSummary.error}
+          newsTitle={newsSummary.currentNews?.title}
+          onClose={newsSummary.clearSummary}
+        />
+      )}
     </div>
   );
 };
+
+// --- News Summary Modal ---
+interface NewsSummaryModalProps {
+  generating: boolean;
+  summary: string | null;
+  error: string | null;
+  newsTitle?: string;
+  onClose: () => void;
+}
+
+function NewsSummaryModal({ generating, summary, error, newsTitle, onClose }: NewsSummaryModalProps) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <h3 className="font-semibold text-gray-800">🤖 AI 新闻解读</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+
+        {newsTitle && (
+          <div className="px-4 py-2 bg-gray-50 text-sm text-gray-600 border-b border-gray-100">
+            {newsTitle}
+          </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto p-4">
+          {generating ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-blue-500 rounded-full mb-3" />
+              <p className="text-sm text-gray-500">AI 正在分析新闻...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500 text-sm">{error}</div>
+          ) : summary ? (
+            <div className="prose prose-sm max-w-none">
+              <ReactMarkdown>{summary}</ReactMarkdown>
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // --- Sub-components ---
 
@@ -283,7 +345,7 @@ function NewsItemRow({ item, onSummarize }: NewsItemRowProps) {
             onClick={() => onSummarize(item)}
             className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
           >
-            AI总结
+            AI解读
           </button>
         )}
       </div>

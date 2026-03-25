@@ -33,7 +33,7 @@ export type ViewType = 'day' | 'week' | 'month';
 export type InputMode = 'record' | 'todo';
 
 // News types
-export type NewsCategory = 'all' | 'finance' | 'ai' | 'ecommerce' | 'tech';
+export type NewsCategory = 'all' | 'general' | 'finance' | 'tech';
 
 export interface NewsItem {
   id: string;

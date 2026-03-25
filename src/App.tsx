@@ -14,7 +14,7 @@ import { MoodJournal } from './components/MoodJournal';
 import { Toast } from './components/Toast';
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { DataMigration } from './components/DataMigration';
-import { ViewType, InputMode, Todo, NewsItem } from './types';
+import { ViewType, InputMode, Todo } from './types';
 import { getDateRange } from './utils/date';
 import dayjs from 'dayjs';
 import dayOfYear from 'dayjs/plugin/dayOfYear';
@@ -92,7 +92,7 @@ function App() {
 
   const { records, addRecord, updateRecord, deleteRecord, getRecordsByDateRange } = useRecords();
   const { todos, addTodo, startTodo, deleteTodo } = useTodos();
-  const { generating, summary, error, generateWorkSummary, generateCustomSummary, clearSummary } = useSummary();
+  const { generating, summary, error, generateWorkSummary, clearSummary } = useSummary();
 
   const dateRange = getDateRange(currentView, currentDate);
   const filteredRecords = getRecordsByDateRange(dateRange.start, dateRange.end);
@@ -108,11 +108,6 @@ function App() {
   const handleStartTodo         = async (id: string) => { await startTodo(id); };
   const handleConvertTodoToRecord = async (todo: Todo) => { await addRecord(todo.content, currentDate); await deleteTodo(todo.id); };
 
-  const handleSummarizeNews = async (news: NewsItem) => {
-    const newsContent = `新闻标题：${news.title}\n新闻来源：${news.source}\n发布时间：${news.publishedAt}\n新闻摘要：${news.summary}`;
-    await generateCustomSummary(newsContent, `${news.source} - ${news.title}`, modelConfig);
-    setShowSummary(true);
-  };
   const handleGenerateSummary = async () => { await generateWorkSummary(records, currentView, currentDate, modelConfig); setShowSummary(true); };
   const handleCloseSummary    = () => { setShowSummary(false); clearSummary(); };
   const handleCopySummary     = () => { if (summary) { navigator.clipboard.writeText(summary); showToast('已复制到剪贴板', 'success'); } };
@@ -171,7 +166,7 @@ function App() {
         <div className="flex gap-5">
           {/* Left Sidebar — News */}
           <div className="w-72 flex-shrink-0">
-            <NewsCard onSummarize={handleSummarizeNews} />
+            <NewsCard modelConfig={modelConfig} />
           </div>
 
           {/* Center Content */}
