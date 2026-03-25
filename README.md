@@ -1,100 +1,100 @@
-# 工作记录工具 (Work Tracker)
+# Work Tracker
 
-一款轻量级工作内容记录工具，快速记录、自动聚合、AI 生成简报。
+一款轻量级个人效率工具，集工作记录、待办管理、心情日记、资讯聚合于一体，支持 AI 智能总结。
 
-## 功能特性
+## ✨ 功能特性
 
-- ✅ 快速输入框，随时记录工作
-- ✅ 日/周/月视图自动聚合
-- ✅ 增删改查完整功能
-- ✅ 一键 AI 总结，生成 100 字以内简报
-- ✅ 本地存储，离线可用
-- ✅ 数据导出
+| 模块 | 功能 |
+|------|------|
+| 📝 工作记录 | 快速输入、日/周/月视图聚合、增删改查 |
+| ✅ 待办事项 | 任务管理、状态切换 |
+| 📅 日历视图 | 日期维度查看记录分布 |
+| 😊 心情日记 | 每日心情记录与回顾 |
+| 📰 新闻资讯 | RSS 聚合、智能评分、定时抓取 |
+| 🤖 AI 总结 | 一键生成工作简报、每日金句 |
 
-## 技术栈
+## 🛠 技术栈
 
+**前端**
 - React 18 + TypeScript
-- Vite (构建工具)
-- TailwindCSS (样式)
-- Dexie.js (IndexedDB 封装)
-- OpenAI API (AI 总结)
+- Vite 5 + TailwindCSS 3
+- react-markdown（Markdown 渲染）
 
-## 快速开始
+**后端**
+- Express + TypeScript
+- better-sqlite3（本地数据库）
+- fast-xml-parser（RSS 解析）
 
-### 方式一：Docker 部署（推荐）
+## 🚀 快速开始
 
-```bash
-# 使用部署脚本（推荐）
-./scripts/docker-deploy.sh deploy
-
-# 或手动执行
-docker-compose up -d
-
-# 访问应用
-# http://localhost:3000
-```
-
-详细的 Docker 部署说明请查看 [DOCKER.md](./DOCKER.md)
-
-### 方式二：本地开发
+### 本地开发
 
 ```bash
 # 安装依赖
-npm install
+npm install && cd server && npm install && cd ..
 
-# 开发模式
-npm run dev
+# 启动前端
+./scripts/start-frontend.sh
 
-# 构建
-npm run build
+# 启动后端
+./scripts/start-backend.sh
 
-# 预览
-npm run preview
+# 或一键启动
+./scripts/start-all.sh
 ```
 
-## 项目结构
+### Docker 部署
+
+```bash
+# 部署
+./scripts/docker-deploy.sh deploy
+
+# 访问
+# 前端: http://localhost:9000
+# 后端: http://localhost:9090
+```
+
+详细部署说明请查看 [DOCKER.md](./DOCKER.md)
+
+## ⚙️ 配置
+
+### AI 接口配置
+
+在应用内设置中配置：
+
+```
+API Key: 你的 OpenAI 兼容 API 密钥
+Base URL: https://api.openai.com/v1（或其他兼容接口）
+Model: gpt-3.5-turbo / gpt-4 / 其他模型
+```
+
+## 📁 项目结构
 
 ```
 work-tracker/
-├── src/
-│   ├── components/
-│   │   ├── RecordInput.tsx      # 输入框组件
-│   │   ├── RecordList.tsx       # 记录列表组件
-│   │   ├── ViewSwitcher.tsx     # 视图切换组件
-│   │   └── SummaryModal.tsx     # 简报弹窗组件
-│   ├── hooks/
-│   │   ├── useRecords.ts        # 记录管理 Hook
-│   │   └── useSummary.ts        # AI 总结 Hook
-│   ├── db/
-│   │   └── database.ts          # IndexedDB 配置
-│   ├── types/
-│   │   └── index.ts             # TypeScript 类型
-│   ├── utils/
-│   │   ├── date.ts              # 日期处理
-│   │   └── prompt.ts            # Prompt 模板
-│   ├── App.tsx
-│   └── main.tsx
-├── index.html
-└── package.json
+├── src/                    # 前端源码
+│   ├── components/         # UI 组件
+│   │   ├── RecordInput     # 记录输入
+│   │   ├── RecordList      # 记录列表
+│   │   ├── TodoList        # 待办列表
+│   │   ├── CalendarCard    # 日历卡片
+│   │   ├── MoodJournal     # 心情日记
+│   │   ├── NewsCard        # 新闻卡片
+│   │   └── SummaryModal    # AI 总结弹窗
+│   ├── hooks/              # 自定义 Hooks
+│   ├── api/                # API 客户端
+│   ├── types/              # 类型定义
+│   └── utils/              # 工具函数
+├── server/                 # 后端源码
+│   └── src/
+│       ├── routes/         # 路由
+│       ├── services/       # 业务逻辑
+│       └── db.ts           # 数据库
+├── news-collector/         # 新闻采集服务
+├── scripts/                # 部署脚本
+└── docker-compose.yml      # Docker 编排
 ```
 
-## API 配置
-
-在 `.env` 文件中配置 AI API：
-
-```env
-VITE_OPENAI_API_KEY=your_api_key_here
-VITE_OPENAI_BASE_URL=https://api.openai.com/v1
-```
-
-## 使用说明
-
-1. 打开应用，在输入框中输入工作内容
-2. 按 Enter 或点击"保存"按钮
-3. 切换日/周/月视图查看不同范围的记录
-4. 点击"AI 总结"生成工作简报
-5. 复制/导出简报用于汇报
-
-## License
+## 📄 License
 
 MIT
